@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>YOUNG BLOOD — Agenda tu cita</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0808; --surface:#161010; --surface-2:#1f1616; --surface-3:#291c1c; --line:#2c1f1f;
+    --red:#e2001a; --red-bright:#ff2a3d; --red-deep:#54000c;
+    --text:#f5efe9; --text-dim:#a89a94; --text-faint:#6b5c58;
+    --font-display:'Bebas Neue', sans-serif; --font-body:'Space Grotesk', sans-serif; --font-ui:'Inter', sans-serif;
+  }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body{
+    margin:0; background: radial-gradient(ellipse 600px 400px at 50% -10%, rgba(226,0,26,0.14), transparent 60%), var(--bg);
+    color:var(--text); font-family:var(--font-ui); min-height:100vh;
+  }
+  #app{ max-width:520px; margin:0 auto; padding:24px 18px 60px; }
+  header{ text-align:center; margin-bottom:20px; }
+  header .brand{ font-family:var(--font-display); font-size:32px; letter-spacing:1px; }
+  header .sub{ font-family:var(--font-body); font-size:12.5px; color:var(--text-dim); margin-top:2px; }
+
+  .step{ display:none; }
+  .step.active{ display:block; animation:fadein .25s ease; }
+  @keyframes fadein{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;} }
+
+  .section-title{ font-family:var(--font-display); font-size:22px; margin:0 0 4px; }
+  .section-hint{ font-family:var(--font-body); font-size:12.5px; color:var(--text-dim); margin-bottom:16px; }
+
+  .svc{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    background:linear-gradient(160deg, var(--surface-2), var(--surface)); border:1px solid var(--line);
+    border-radius:14px; padding:14px 16px; margin-bottom:8px; cursor:pointer;
+  }
+  .svc.sel{ border-color:var(--red); box-shadow:0 0 0 1px var(--red); }
+  .svc .name{ font-family:var(--font-body); font-weight:600; font-size:14px; }
+  .svc .price{ font-family:var(--font-display); font-size:18px; color:var(--red-bright); }
+
+  .dates{ display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; margin-bottom:16px; }
+  .date-chip{
+    flex-shrink:0; text-align:center; background:var(--surface); border:1px solid var(--line);
+    border-radius:12px; padding:10px 14px; cursor:pointer; min-width:58px;
+  }
+  .date-chip.sel{ background:var(--red); border-color:var(--red); }
+  .date-chip .dw{ font-family:var(--font-body); font-size:10px; color:var(--text-dim); text-transform:uppercase; }
+  .date-chip.sel .dw{ color:#fff; }
+  .date-chip .dn{ font-family:var(--font-display); font-size:20px; }
+
+  .slots{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:16px; }
+  .slot{ text-align:center; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:10px 6px; font-family:var(--font-body); font-size:13px; cursor:pointer; }
+  .slot.sel{ background:var(--red); border-color:var(--red); }
+  .slot.taken{ opacity:0.3; text-decoration:line-through; cursor:not-allowed; }
+  .empty{ text-align:center; padding:24px; color:var(--text-faint); font-family:var(--font-body); font-size:13px; }
+
+  .field{ margin-bottom:12px; }
+  .field label{ display:block; font-family:var(--font-body); font-size:11.5px; color:var(--text-dim); margin-bottom:5px; }
+  .field input{ width:100%; background:var(--surface); border:1px solid var(--line); color:var(--text); border-radius:10px; padding:11px 12px; font-size:14.5px; outline:none; }
+  .field input:focus{ border-color:var(--red); }
+
+  .summary{ background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:14px 16px; margin:16px 0; }
+  .summary .row{ display:flex; justify-content:space-between; font-family:var(--font-body); font-size:13px; padding:4px 0; color:var(--text-dim); }
+  .summary .row.total{ color:var(--text); font-weight:600; font-size:15px; border-top:1px solid var(--line); margin-top:6px; padding-top:10px; }
+
+  .btn{ font-family:var(--font-body); font-weight:600; font-size:14px; background:var(--red); color:#fff; border:none; padding:14px 16px; border-radius:14px; cursor:pointer; width:100%; box-shadow:0 0 24px rgba(226,0,26,0.35); }
+  .btn:disabled{ opacity:0.4; cursor:not-allowed; box-shadow:none; }
+
+  .nav-row{ display:flex; gap:10px; margin-top:18px; }
+  .nav-row .btn.back{ flex:0 0 80px; background:var(--surface-3); box-shadow:none; }
+
+  #msg{ text-align:center; font-family:var(--font-body); font-size:12.5px; color:var(--red-bright); margin-top:10px; min-height:16px; }
+
+  .success{ text-align:center; padding:40px 10px; }
+  .success .big{ font-size:48px; }
+  .success h2{ font-family:var(--font-display); font-size:26px; margin:12px 0 6px; }
+  .success p{ font-family:var(--font-body); font-size:13px; color:var(--text-dim); }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="brand">🩸 YOUNG BLOOD</div>
+    <div class="sub">Agenda tu cita — se aparta con el pago</div>
+  </header>
+
+  <section class="step active" id="step-1">
+    <h1 class="section-title">Elige tu servicio</h1>
+    <p class="section-hint">Selecciona lo que te vas a hacer</p>
+    <div id="svc-list"></div>
+    <div class="nav-row">
+      <button class="btn" id="to-step-2" disabled>Continuar</button>
+    </div>
+  </section>
+
+  <section class="step" id="step-2">
+    <h1 class="section-title">Elige día y hora</h1>
+    <p class="section-hint">Solo se muestran los horarios disponibles</p>
+    <div class="dates" id="date-list"></div>
+    <div id="slots-wrap"></div>
+    <div class="nav-row">
+      <button class="btn back" data-back="1">←</button>
+      <button class="btn" id="to-step-3" disabled>Continuar</button>
+    </div>
+  </section>
+
+  <section class="step" id="step-3">
+    <h1 class="section-title">Tus datos</h1>
+    <p class="section-hint">Para confirmarte la cita</p>
+    <div class="field"><label>Nombre</label><input type="text" id="in-nombre" placeholder="Tu nombre"></div>
+    <div class="field"><label>WhatsApp</label><input type="tel" id="in-whatsapp" placeholder="10 dígitos" inputmode="numeric"></div>
+
+    <div class="summary" id="summary"></div>
+
+    <button class="btn" id="pay-btn">Pagar y agendar</button>
+    <div id="msg"></div>
+    <div class="nav-row" style="margin-top:0;">
+      <button class="btn back" data-back="2">←</button>
+    </div>
+  </section>
+
+  <section class="step" id="step-success">
+    <div class="success">
+      <div class="big">🩸✅</div>
+      <h2>¡Cita confirmada!</h2>
+      <p id="success-detail"></p>
+    </div>
+  </section>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  const SUPABASE_URL = "https://lvucpvzhqljqpiawnrzt.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2dWNwdnpocWxqcXBpYXducnp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0ODUzMjQsImV4cCI6MjA5ODA2MTMyNH0.GcPO8mOV3-DFhZrsg1lgy0bTiRO7R4DJ0WcuQc_Zd8k";
+
+  async function sb(path, opts={}){
+    const res = await fetch(SUPABASE_URL + '/rest/v1/' + path, {
+      ...opts,
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+        'Content-Type': 'application/json',
+        ...(opts.headers||{})
+      }
+    });
+    if(!res.ok) throw new Error('Error al consultar datos');
+    return res.json();
+  }
+
+  const state = { servicios:[], disponibilidad:[], citas:[], servicio:null, fechaISO:null, hora:null };
+
+  const DOW = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+  const DOW_SHORT = ['dom','lun','mar','mié','jue','vie','sáb'];
+
+  function showStep(n){
+    document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+    document.getElementById(n==='success' ? 'step-success' : 'step-'+n).classList.add('active');
+  }
+  document.querySelectorAll('[data-back]').forEach(b=>{
+    b.addEventListener('click', ()=> showStep(b.dataset.back));
+  });
+
+  async function loadServicios(){
+    state.servicios = await sb('servicios?activo=eq.true&order=orden.asc');
+    const wrap = document.getElementById('svc-list');
+    wrap.innerHTML = state.servicios.map(s=>`
+      <div class="svc" data-id="${s.id}">
+        <div class="name">${s.nombre}</div>
+        <div class="price">$${Number(s.precio).toLocaleString('es-MX')}</div>
+      </div>
+    `).join('');
+    wrap.querySelectorAll('.svc').forEach(el=>{
+      el.addEventListener('click', ()=>{
+        wrap.querySelectorAll('.svc').forEach(x=>x.classList.remove('sel'));
+        el.classList.add('sel');
+        state.servicio = state.servicios.find(s=>s.id===el.dataset.id);
+        document.getElementById('to-step-2').disabled = false;
+      });
+    });
+  }
+  document.getElementById('to-step-2').addEventListener('click', async ()=>{
+    showStep('2');
+    await loadDisponibilidadYCitas();
+    renderDates();
+  });
+
+  async function loadDisponibilidadYCitas(){
+    state.disponibilidad = await sb('disponibilidad?activo=eq.true');
+    const today = new Date();
+    const in60 = new Date(); in60.setDate(today.getDate()+60);
+    const fmt = d => d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    state.citas = await sb(`citas?estado=eq.pagada&fecha=gte.${fmt(today)}&fecha=lte.${fmt(in60)}`);
+  }
+
+  function renderDates(){
+    const wrap = document.getElementById('date-list');
+    const diasDisponibles = new Set(state.disponibilidad.map(d=>d.dia_semana));
+    let html = '';
+    const today = new Date();
+    for(let i=0; i<30; i++){
+      const d = new Date(today); d.setDate(today.getDate()+i);
+      if(!diasDisponibles.has(d.getDay())) continue;
+      const iso = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+      html += `<div class="date-chip" data-iso="${iso}" data-dow="${d.getDay()}">
+        <div class="dw">${DOW_SHORT[d.getDay()]}</div><div class="dn">${d.getDate()}</div>
+      </div>`;
+    }
+    wrap.innerHTML = html || '<div class="empty">No hay días disponibles configurados todavía</div>';
+    wrap.querySelectorAll('.date-chip').forEach(el=>{
+      el.addEventListener('click', ()=>{
+        wrap.querySelectorAll('.date-chip').forEach(x=>x.classList.remove('sel'));
+        el.classList.add('sel');
+        state.fechaISO = el.dataset.iso;
+        state.hora = null;
+        document.getElementById('to-step-3').disabled = true;
+        renderSlots(Number(el.dataset.dow));
+      });
+    });
+  }
+
+  function renderSlots(dow){
+    const disp = state.disponibilidad.filter(d=>d.dia_semana===dow);
+    const wrap = document.getElementById('slots-wrap');
+    if(disp.length===0){ wrap.innerHTML = '<div class="empty">Sin horario ese día</div>'; return; }
+
+    const ocupadas = new Set(state.citas.filter(c=>c.fecha===state.fechaISO).map(c=>c.hora.slice(0,5)));
+
+    let slots = [];
+    disp.forEach(d=>{
+      let [h,m] = d.hora_inicio.split(':').map(Number);
+      const [hf,mf] = d.hora_fin.split(':').map(Number);
+      while(h < hf || (h===hf && m < mf)){
+        slots.push(String(h).padStart(2,'0')+':'+String(m).padStart(2,'0'));
+        m += 30; if(m>=60){ m=0; h++; }
+      }
+    });
+
+    wrap.innerHTML = `<div class="slots">${slots.map(s=>{
+      const taken = ocupadas.has(s);
+      return `<div class="slot ${taken?'taken':''}" data-h="${s}">${s}</div>`;
+    }).join('')}</div>`;
+
+    wrap.querySelectorAll('.slot:not(.taken)').forEach(el=>{
+      el.addEventListener('click', ()=>{
+        wrap.querySelectorAll('.slot').forEach(x=>x.classList.remove('sel'));
+        el.classList.add('sel');
+        state.hora = el.dataset.h;
+        document.getElementById('to-step-3').disabled = false;
+      });
+    });
+  }
+
+  document.getElementById('to-step-3').addEventListener('click', ()=>{
+    showStep('3');
+    renderSummary();
+  });
+
+  function renderSummary(){
+    const [y,m,d] = state.fechaISO.split('-').map(Number);
+    const dow = new Date(y, m-1, d).getDay();
+    document.getElementById('summary').innerHTML = `
+      <div class="row"><span>Servicio</span><span>${state.servicio.nombre}</span></div>
+      <div class="row"><span>Fecha</span><span>${DOW[dow]} ${d}/${m}</span></div>
+      <div class="row"><span>Hora</span><span>${state.hora}</span></div>
+      <div class="row total"><span>Total</span><span>$${Number(state.servicio.precio).toLocaleString('es-MX')}</span></div>
+    `;
+  }
+
+  document.getElementById('pay-btn').addEventListener('click', async ()=>{
+    const nombre = document.getElementById('in-nombre').value.trim();
+    const whatsapp = document.getElementById('in-whatsapp').value.trim();
+    const msg = document.getElementById('msg');
+    msg.textContent = '';
+    if(!nombre || !whatsapp){ msg.textContent = 'Pon tu nombre y WhatsApp'; return; }
+
+    const btn = document.getElementById('pay-btn');
+    btn.disabled = true; btn.textContent = 'Un momento...';
+
+    try{
+      const res = await fetch('/api/create-checkout-session', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          cliente_nombre: nombre,
+          whatsapp: whatsapp,
+          servicio_id: state.servicio.id,
+          servicio_nombre: state.servicio.nombre,
+          precio: state.servicio.precio,
+          fecha: state.fechaISO,
+          hora: state.hora
+        })
+      });
+      const data = await res.json();
+      if(data.url){ window.location.href = data.url; }
+      else{ throw new Error(data.error || 'No se pudo iniciar el pago'); }
+    }catch(e){
+      msg.textContent = 'Hubo un problema, intenta de nuevo';
+      btn.disabled = false; btn.textContent = 'Pagar y agendar';
+    }
+  });
+
+  (async function init(){
+    const params = new URLSearchParams(window.location.search);
+    if(params.get('pago') === 'exitoso'){
+      showStep('success');
+      document.getElementById('success-detail').textContent = 'Te esperamos en YOUNG BLOOD. Guarda la fecha y hora que elegiste — te la confirmamos también por WhatsApp.';
+      return;
+    }
+    await loadServicios();
+  })();
+
+})();
+</script>
+</body>
+</html>
